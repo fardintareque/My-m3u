@@ -1,41 +1,51 @@
 const fetch = require('node-fetch');
 
-module.exports = async (req, res) => {
-  const { id } = req.query;
-  if (!id) return res.status(400).send('Error: Missing ID');
-
+async function fetchStream(id, clientName, clientVersion) {
   try {
-    // ইউটিউবের অফিশিয়াল ইন্টারনাল API-তে সরাসরি রিকোয়েস্ট পাঠানো হচ্ছে
     const response = await fetch('https://www.youtube.com/youtubei/v1/player', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         videoId: id,
         context: {
           client: {
-            clientName: 'ANDROID_EMBEDDED_PLAYER',
-            clientVersion: '19.22.34',
+            clientName: clientName,
+            clientVersion: clientVersion,
             hl: 'en',
             gl: 'US'
           }
         }
       })
     });
-
     const data = await response.json();
-    const streamUrl = data?.streamingData?.hlsManifestUrl;
+    return data?.streamingData?.hlsManifestUrl || null;
+  } catch (e) {
+    return null;
+  }
+}
 
-    if (streamUrl) {
-      // সাকসেস হলে প্লেয়ারকে সরাসরি .m3u8 লিংকে পাঠিয়ে দেবে
-      res.writeHead(302, { Location: streamUrl });
-      res.end();
-    } else {
-      res.status(404).send('Error: HLS Link not found. Check if the video ID is correct and live.');
-    }
-  } catch (error) {
-    res.status(500).send('Server Error: ' + error.message);
+module.exports = async (req, res) => {
+  const { id } = req.query;
+  if (!id) return res.status(400).send('Error: Missing ID');
+
+  // পদ্ধতি ১: স্মার্ট টিভি ক্লায়েন্ট (এটি ডেটাসেন্টার ব্লক অনায়াসে বাইপাস করে)
+  let streamUrl = await fetchStream(id, 'TVHTML5_SIMPLY_EMBEDDED_PLAYER', '1.0');
+
+  // পদ্ধতি ২: ওয়েব এম্বেড ক্লায়েন্ট ফলব্যাক
+  if (!streamUrl) {
+    streamUrl = await fetchStream(id, 'WEB_EMBEDDED_PLAYER', '1.20240625.01.00');
+  }
+
+  // পদ্ধতি ৩: কোর অ্যান্ড্রয়েড ক্লায়েন্ট ফলব্যাক
+  if (!streamUrl) {
+    streamUrl = await fetchStream(id, 'ANDROID', '17.31.35');
+  }
+
+  if (streamUrl) {
+    // যেকোনো একটি পদ্ধতি সফল হলে প্লেয়ারকে রিডাইরেক্ট করবে
+    res.writeHead(302, { Location: streamUrl });
+    res.end();
+  } else {
+    res.status(404).send('Error: YouTube is heavily restricting streaming data on this infrastructure.');
   }
 };
