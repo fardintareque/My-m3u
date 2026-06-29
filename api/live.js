@@ -4,38 +4,54 @@ module.exports = async (req, res) => {
   const { id } = req.query;
   if (!id) return res.status(400).send('Error: Missing ID');
 
-  // বিভিন্ন সচল Piped এপিআই ইনস্ট্যান্সের লিস্ট (একটি ডাউন হলে অন্যটি কাজ করবে)
-  const instances = [
+  // ১. পাইপড (Piped) ইনস্ট্যান্স পুল
+  const pipedInstances = [
     'https://pipedapi.kavin.rocks',
     'https://api.piped.video',
-    'https://pipedapi.oxymoron.biz',
-    'https://pipedapi.moomoo.me'
+    'https://pipedapi.moomoo.me',
+    'https://pipedapi.synced.review',
+    'https://pipedapi.charlie.re'
   ];
 
-  let streamUrl = null;
-
-  // লুপ চালিয়ে সচল প্রক্সি থেকে .m3u8 লিংকটি বের করা
-  for (const instance of instances) {
+  for (const instance of pipedInstances) {
     try {
-      const response = await fetch(`${instance}/streams/${id}`);
+      const response = await fetch(`${instance}/streams/${id}`, { timeout: 2500 });
       if (response.ok) {
         const data = await response.json();
-        // Piped আমাদের সরাসরি রেডিমেড hls (.m3u8) লিংক দিয়ে দেয়
         if (data && data.hls) {
-          streamUrl = data.hls;
-          break; 
+          res.writeHead(302, { Location: data.hls });
+          return res.end();
         }
       }
-    } catch (e) {
-      // এই ইনস্ট্যান্স ফেইল করলে পরেরটা ট্রাই করবে
-    }
+    } catch (e) {}
   }
 
-  if (streamUrl) {
-    // সফল হলে প্লেয়ারকে সরাসরি রিডাইরেক্ট করবে
-    res.writeHead(302, { Location: streamUrl });
-    res.end();
-  } else {
-    res.status(404).send('Error: All secure proxy bridges are currently rate-limited by YouTube. Try again in a few minutes.');
+  // ২. ইনভিডিয়াস (Invidious) ইনস্ট্যান্স পুল (ফলব্যাক)
+  const invidiousInstances = [
+    'https://yewtu.be',
+    'https://iv.melmac.space',
+    'https://invidious.perennialte.ch',
+    'https://inv.tux.digital',
+    'https://invidious.nerdvpn.de'
+  ];
+
+  for (const instance of invidiousInstances) {
+    try {
+      const response = await fetch(`${instance}/api/v1/videos/${id}`, { timeout: 2500 });
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.hlsUrl) {
+          let streamUrl = data.hlsUrl;
+          if (streamUrl.startsWith('/')) {
+            streamUrl = `${instance}${streamUrl}`;
+          }
+          res.writeHead(302, { Location: streamUrl });
+          return res.end();
+        }
+      }
+    } catch (e) {}
   }
+
+  // যদি ১০টি সার্ভারের সবগুলোই ব্যর্থ হয়
+  res.status(500).send('Error: All hybrid networks are temporarily rate-limited. Please refresh in a moment.');
 };
