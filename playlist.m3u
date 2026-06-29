@@ -1,3 +1,3 @@
 #EXTM3U
 #EXTINF:-1 tvg-id="SomoyTV" tvg-name="Somoy TV" group-title="News", Somoy TV
-https://fardin-m3u.vercel.app/api/live?id=ITx_k7uNFP4&.m3u8
+https://youtube-live-m3u.vercel.app/api/live?url=https://www.youtube.com/watch?v=ITx_k7uNFP4
