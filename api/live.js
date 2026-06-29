@@ -1,51 +1,41 @@
 const fetch = require('node-fetch');
 
-async function fetchStream(id, clientName, clientVersion) {
-  try {
-    const response = await fetch('https://www.youtube.com/youtubei/v1/player', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        videoId: id,
-        context: {
-          client: {
-            clientName: clientName,
-            clientVersion: clientVersion,
-            hl: 'en',
-            gl: 'US'
-          }
-        }
-      })
-    });
-    const data = await response.json();
-    return data?.streamingData?.hlsManifestUrl || null;
-  } catch (e) {
-    return null;
-  }
-}
-
 module.exports = async (req, res) => {
   const { id } = req.query;
   if (!id) return res.status(400).send('Error: Missing ID');
 
-  // পদ্ধতি ১: স্মার্ট টিভি ক্লায়েন্ট (এটি ডেটাসেন্টার ব্লক অনায়াসে বাইপাস করে)
-  let streamUrl = await fetchStream(id, 'TVHTML5_SIMPLY_EMBEDDED_PLAYER', '1.0');
+  // বিভিন্ন সচল Piped এপিআই ইনস্ট্যান্সের লিস্ট (একটি ডাউন হলে অন্যটি কাজ করবে)
+  const instances = [
+    'https://pipedapi.kavin.rocks',
+    'https://api.piped.video',
+    'https://pipedapi.oxymoron.biz',
+    'https://pipedapi.moomoo.me'
+  ];
 
-  // পদ্ধতি ২: ওয়েব এম্বেড ক্লায়েন্ট ফলব্যাক
-  if (!streamUrl) {
-    streamUrl = await fetchStream(id, 'WEB_EMBEDDED_PLAYER', '1.20240625.01.00');
-  }
+  let streamUrl = null;
 
-  // পদ্ধতি ৩: কোর অ্যান্ড্রয়েড ক্লায়েন্ট ফলব্যাক
-  if (!streamUrl) {
-    streamUrl = await fetchStream(id, 'ANDROID', '17.31.35');
+  // লুপ চালিয়ে সচল প্রক্সি থেকে .m3u8 লিংকটি বের করা
+  for (const instance of instances) {
+    try {
+      const response = await fetch(`${instance}/streams/${id}`);
+      if (response.ok) {
+        const data = await response.json();
+        // Piped আমাদের সরাসরি রেডিমেড hls (.m3u8) লিংক দিয়ে দেয়
+        if (data && data.hls) {
+          streamUrl = data.hls;
+          break; 
+        }
+      }
+    } catch (e) {
+      // এই ইনস্ট্যান্স ফেইল করলে পরেরটা ট্রাই করবে
+    }
   }
 
   if (streamUrl) {
-    // যেকোনো একটি পদ্ধতি সফল হলে প্লেয়ারকে রিডাইরেক্ট করবে
+    // সফল হলে প্লেয়ারকে সরাসরি রিডাইরেক্ট করবে
     res.writeHead(302, { Location: streamUrl });
     res.end();
   } else {
-    res.status(404).send('Error: YouTube is heavily restricting streaming data on this infrastructure.');
+    res.status(404).send('Error: All secure proxy bridges are currently rate-limited by YouTube. Try again in a few minutes.');
   }
 };
