@@ -5,37 +5,35 @@ module.exports = async (req, res) => {
   if (!id) return res.status(400).send('Error: Missing ID');
 
   try {
-    // ওয়াচ পেজের বদলে এম্বেড পেজ ব্যবহার করা হয়েছে (ব্লক হওয়া এড়াতে)
-    const response = await fetch(`https://www.youtube.com/embed/${id}`, {
+    // ইউটিউবের অফিশিয়াল ইন্টারনাল API-তে সরাসরি রিকোয়েস্ট পাঠানো হচ্ছে
+    const response = await fetch('https://www.youtube.com/youtubei/v1/player', {
+      method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
         'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'
-      }
+      },
+      body: JSON.stringify({
+        videoId: id,
+        context: {
+          client: {
+            clientName: 'ANDROID_EMBEDDED_PLAYER',
+            clientVersion: '19.22.34',
+            hl: 'en',
+            gl: 'US'
+          }
+        }
+      })
     });
-    
-    const html = await response.text();
-    let streamUrl = null;
 
-    // মেথড ১: HLS লিংক খোঁজা
-    const match = html.match(/"hlsManifestUrl":"([^"]+)"/);
-    if (match && match[1]) {
-      streamUrl = match[1].replace(/\\/g, '');
-    } else {
-      // মেথড ২: বিকল্প JSON ডাটা চেক করা
-      const jsonMatch = html.match(/ytInitialPlayerResponse\s*=\s*({.+?});/);
-      if (jsonMatch) {
-        try {
-          const playerResponse = JSON.parse(jsonMatch[1]);
-          streamUrl = playerResponse?.streamingData?.hlsManifestUrl;
-        } catch (e) {}
-      }
-    }
+    const data = await response.json();
+    const streamUrl = data?.streamingData?.hlsManifestUrl;
 
     if (streamUrl) {
-      // সাকসেস হলে প্লেয়ারকে রিডাইরেক্ট করবে
+      // সাকসেস হলে প্লেয়ারকে সরাসরি .m3u8 লিংকে পাঠিয়ে দেবে
       res.writeHead(302, { Location: streamUrl });
       res.end();
     } else {
-      res.status(404).send('Error: Stream not found. Channel might be offline.');
+      res.status(404).send('Error: HLS Link not found. Check if the video ID is correct and live.');
     }
   } catch (error) {
     res.status(500).send('Server Error: ' + error.message);
