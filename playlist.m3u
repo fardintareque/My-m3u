@@ -7,16 +7,16 @@ http://10.10.230.182:8080/ch2.m3u8
 http://10.10.230.182:8080/ch3.m3u8
 
 #EXTINF:-1 tvg-id="" tvg-name="Telemundo" tvg-logo="" group-title="Local Sports",Telemundo
-https://inproviszon.st/telemundo-usa.m3u8
+https://inproviszon.st/telemundo-usa.m3u8|User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)
 
 #EXTINF:-1 tvg-id="" tvg-name="United Sports 2" tvg-logo="" group-title="Local Sports",United Sports 2
 http://10.10.230.182:8080/ch5.m3u8
 
 #EXTINF:-1 tvg-id="" tvg-name="FOX Sports FHD" tvg-logo="" group-title="Local Sports",FOX Sports FHD
-https://inproviszon.st/fox-usa.m3u8
+https://inproviszon.st/fox-usa.m3u8|User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)
 
 #EXTINF:-1 tvg-id="" tvg-name="FOX Sports 4K" tvg-logo="" group-title="Local Sports",FOX Sports 4K
-https://inproviszon.st/fox4k-usa.m3u8
+https://inproviszon.st/fox4k-usa.m3u8|User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)
 
 #EXTINF:-1 tvg-id="" tvg-name="NowSports 4K" tvg-logo="" group-title="4K Sports",NowSports 4K
 http://fastshare1.com:8080//live/25711345/late8airline/745270.ts
@@ -28,10 +28,10 @@ http://fastshare1.com:8080//live/25711345/late8airline/688287.ts
 http://fastshare1.com/live/1Aoen7elp5/IgMJ60tmAa/745269.ts
 
 #EXTINF:-1 tvg-id="" tvg-name="CazéTV BR (1080p HD)" tvg-logo="" group-title="International Sports",CazéTV BR (1080p HD)
-https://dfr80qz435crc.cloudfront.net/MNOP/Amagi/Caze/Caze_TV_BR/1080p-vtt/index.m3u8
+https://dfr80qz435crc.cloudfront.net/MNOP/Amagi/Caze/Caze_TV_BR/1080p-vtt/index.m3u8|User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)
 
 #EXTINF:-1 tvg-id="" tvg-name="beIN Sports (1080p HD)" tvg-logo="" group-title="International Sports",beIN Sports (1080p HD)
-https://d9ssxzmclhfo4.cloudfront.net/bein_sports1080p.m3u8
+https://d9ssxzmclhfo4.cloudfront.net/bein_sports1080p.m3u8|User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)
 
 #EXTINF:-1 xui-id="1" tvg-id="" tvg-name="BTV NATIONAL HD 2" tvg-logo="http://172.19.17.34:80/images/430b8b556f80c9ad67ae6353457c9054.png" group-title="FIFA WORLD CUP",BTV NATIONAL HD 2
 http://172.19.17.34:80/play/JmU-3pCgErAiWP5dU8MsA6Leaj8pHKV9GIxfiviqUcc/ts
@@ -56,7 +56,9 @@ http://172.19.17.34:80/play/JmU-3pCgErAiWP5dU8MsA83sRY55c8U0ieZJ2vKejvc/ts
 
 #EXTINF:-1 xui-id="156" tvg-id="" tvg-name="BEIN SPORTS HD USA" tvg-logo="" group-title="FIFA WORLD CUP",BEIN SPORTS HD USA
 http://172.19.17.34:80/play/JmU-3pCgErAiWP5dU8MsAzYbVXA85MGuL-AAcbW94Eg/ts
+
 #EXTINF:-1 xui-id="69" tvg-id="" tvg-name="TNT SPORT 1 HD" tvg-logo="" group-title="FIFA WORLD CUP",TNT SPORT 1 HD
 http://172.19.17.34:80/play/JmU-3pCgErAiWP5dU8MsAwZHABQ1PwEsiCEDd_84Ex8/ts
+
 #EXTINF:-1 xui-id="70" tvg-id="" tvg-name="TNT SPORTS 2 HD" tvg-logo="" group-title="FIFA WORLD CUP",TNT SPORTS 2 HD
 http://172.19.17.34:80/play/JmU-3pCgErAiWP5dU8MsAwaaOLnW3aAPJbV6D78jsqk/ts
